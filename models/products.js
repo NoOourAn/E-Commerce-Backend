@@ -10,6 +10,12 @@ const ProductsSchema = new mongoose.Schema({
                         max: 100,
                         required: [true, "can't be blank"],
                     },
+        img:
+                {
+                        data: Buffer,
+                        contentType: String
+                   },
+
         description: {    type: String,
                         min: 1,
                         max: 500,
@@ -27,7 +33,7 @@ const ProductsSchema = new mongoose.Schema({
              required: [true, "can't be blank"],
         },
         numberInStock:{
-            type:Number;
+            type:Number,
              required: [true, "can't be blank"]
         },
         price:{

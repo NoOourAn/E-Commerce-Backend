@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_DB || 'mongodb://localhost:27017/E-Commerce-Backend', (err) => {
+mongoose.connect(process.env.MONGO_DB || 'mongodb://localhost:27017/E-Commerce-Backend', 
+{ useNewUrlParser: true, useUnifiedTopology: true },
+
+(err) => {
     if(err) {
         console.warn("failed to connect to MongoDB")
         console.error(err);
@@ -8,3 +11,4 @@ mongoose.connect(process.env.MONGO_DB || 'mongodb://localhost:27017/E-Commerce-B
     }
     console.info(`connected to DB successfully`);
 });
+ 
