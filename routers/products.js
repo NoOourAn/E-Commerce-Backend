@@ -1,3 +1,4 @@
+const express = require('express');
 const router = new express.Router();
 const Product = require("../models/products");
 
@@ -30,12 +31,12 @@ router.post('/',upload.single('image'),async (req,res)=>{
     }
 })
 
-///MANIPULATE product with ID
+///MANIPULATE product comments with ID
 router.route('/:id')
 .delete(async(req, res) => {  ///delete product
    try {
        const {id} = req.params;
-       const product = await Product.findOneAndDelete({_id:id})
+       const product = await Product.findByIdAndDelete(id)
        const obj = {
            success:true,
            message:(product)? "product deleted successfully": "product not found"
@@ -53,7 +54,7 @@ router.route('/:id')
             data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
             contentType: 'image/png'
         }
-       const product = await Product.findOneAndUpdate({ _id: id }, {name,description,category ,brand,numberInStock,price},{returnOriginal: false})
+       const product = await Product.findByIdAndUpdate(id, {name,description,category ,brand,numberInStock,price},{returnOriginal: false})
        const obj = {
            success:true,
            message:(product)? "product edited successfully": "product not found",
@@ -73,7 +74,7 @@ router.route('/:id')
        const {id} = req.params;
        const ratingValue = req.query
        const userId = req.signedData;
-       const product = await Product.findOne({_id:id})
+       const product = await Product.findById(id)
        const total = product.totalRating
        product.ratings.forEach(element => {
             if(element.user == userId){
@@ -95,7 +96,48 @@ router.route('/:id')
 })
 
 
+///add comment
+router.post('/:id/comments',async (req,res)=>{
+    try {
+        const {id} = req.params; ///product id
+        const {body} = req.body
+        const userId = req.signedData;
+        if(body){
+            const comment = {
+                body,
+                user:userId
+            };
+            let product = await Product.findById(id)
+            product.comments.push(comment);
+            product.save();
+            const obj = {
+                success:true,
+                message:"comment was added succesfully",
+                product: product
+            }
+            res.send(obj)
+        }else throw new Error("comment body is required")
+    } catch (err) {
+        res.json({success:false,message:err.message})
+    }
+})
+
+///delete comment
+router.delete('/:productId/comments/:commentId',async (req,res)=>{
+    try {
+        const {productId,commentId} = req.params;
+        const product = await Product.findByIdAndDelete(productId, {$pull: {comments: { $elemMatch: { _id: commentId }}}},{returnOriginal: false})
+
+        const obj = {
+            success:true,
+            message:(product)? "product deleted successfully": "product not found"
+        }
+        res.send(obj)
+    }catch (err){
+        res.json({success:false,message:err.message})
+    } 
+})
 
 
 
-module.exports = productsRouter;
+module.exports = router;

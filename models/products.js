@@ -66,20 +66,21 @@ const ProductsSchema = new mongoose.Schema({
         comments:[
             
             {
-             body :{
+            body :{
                  type: String,
                  min: 1,
-                 maxlength:500
+                 maxlength:500,
+                 required: [true, "can't be blank"]
+
             },
-                 user :{
+            user :{
                 type:mongoose.Schema.Types.ObjectId,
                 ref:'User'
-                },
-                time:
-             {
-                 type:Date,
+            },
+            time:{
+                type:Date,
                 default: Date.now()
-                }
+            }
             
         }
         
