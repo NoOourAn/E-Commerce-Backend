@@ -4,7 +4,6 @@ const ProductsSchema = new mongoose.Schema({
 
     //fadel el img
     
-        
          name: {    type: String,
                         min: 1,
                         max: 100,
@@ -13,7 +12,8 @@ const ProductsSchema = new mongoose.Schema({
         img:
                 {
                         data: Buffer,
-                        contentType: String
+                        contentType: String,
+                        required: [true, "can't be blank"],
                    },
 
         description: {    type: String,
@@ -37,31 +37,31 @@ const ProductsSchema = new mongoose.Schema({
              required: [true, "can't be blank"]
         },
         price:{
-            type:Number;
+            type:Number,
             required: [true, "can't be blank"]
         },
 
      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        ratings:[
+        totalRating:{
+            type:Number,
+            min:1,
+            max:5,
+        },
+        ratings:[  
+        {
+            user :{
+                type:mongoose.Schema.Types.ObjectId,
+                ref:'User'
+            },
+            rating:{
+                type:Number,
+                min:0,
+                max:5,
+            }
             
-            {
-            number:{
-                type:number,
-            },
-            totalRatings :{
-                 type: String,
-                 min: 1,
-                 maxlength:500
-            },
-             time:
-             {
-                 type:Date,
-                default: Date.now()
-                }
-                 
         }
-        
         ],
+                  
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         comments:[
             
