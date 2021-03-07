@@ -1,6 +1,22 @@
+const express = require('express');
 const router = new express.Router();
+//const upload = require('../middlewares/imgStorage')
 const Product = require("../models/products");
+const uploadImgMiddleware = require('../middlewares/imgStorage')
 
+
+var multer = require('multer');
+ 
+var storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads')
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.fieldname + '-' + Date.now())
+    }
+});
+ 
+var upload = multer({ storage: storage });
 
 ///api to create new product
 router.post('/',upload.single('image'),async (req,res)=>{
@@ -80,7 +96,7 @@ router.route('/:id')
                 product.totalRating = (total*2) - element.rating;  ///delete old rating from total rating
                 element.rating = ratingValue;
                 product.totalRating = (total+ratingValue)/2;  ///update total rating with new rating
-                break;
+                //break;
             }
        });
        await product.save();
@@ -96,6 +112,112 @@ router.route('/:id')
 
 
 
+// name cat maxprice minprice id brand all date
 
 
-module.exports = productsRouter;
+
+
+
+router.get('/', async (req,res)=>{                
+    try{
+        const userById = await User.findById(req.signedData.id);
+        const { name,category,brand,maxPrice,minPrice,id,latestdate,oldestdate} = req.query;
+        if(name)
+        {
+         products =  await Product.find({ name: name }); 
+        }
+        else if(category)
+        {
+            products = await Product.find({ category: category }); 
+        }
+        else if(brand)
+        {
+            products =  await Product.find({ brand: brand }); 
+        }
+        else if(maxPrice)
+        {
+            products =  await Product.find().sort( { price: -1 } ); 
+        }
+        else if(minPrice)
+        {
+            products = await Product.find({ price: 1 }); 
+        }
+        else if(latestdate)
+        {
+            products =  await Product.find().sort({ createdAt: 'asc'}).exec();
+        }
+        else if(oldestdate)
+        {
+            products = await Product.find().sort({ createdAt: 'desc'}).exec();; 
+        }
+        else if(id)
+        {
+            products = await Product.find({ _id: id }); 
+        }
+        else 
+        {
+            products =  await Product.find({}); 
+        }
+        
+        res.statusCode = 201;
+        res.send(products)
+    }
+    catch(err){
+        console.error(err);
+        res.statusCode = 422;
+        res.json({ success: false, message: err.message });
+    }
+})  
+
+
+
+router.get('/getCategory', async (req,res)=>{                
+    try{
+        const {category} = req.query;
+        products = await Product.find({}); 
+        const CategoryArr = []
+        for(let c in products)
+        {
+            if(!CategoryArr.includes(c.category))
+            {
+            CategoryArr.push(c.category);
+            }
+        }
+        res.statusCode = 201;
+        res.send(CategoryArr)
+    }
+    catch(err){
+        console.error(err);
+        res.statusCode = 422;
+        res.json({ success: false, message: err.message });
+    }
+})  
+
+router.get('/getBrand', async (req,res)=>{                
+    try{
+        const {brand} = req.query;
+        products = await Product.find({}); 
+        const brandArr = []
+        for(let c in products)
+        {
+            if(!brandArr.includes(c.brand))
+            {
+                brandArr.push(c.brand);
+            }
+        }
+        res.statusCode = 201;
+        res.send(brandArr)
+    }
+    catch(err){
+        console.error(err);
+        res.statusCode = 422;
+        res.json({ success: false, message: err.message });
+    }
+})  
+
+
+
+
+
+
+module.exports = router;

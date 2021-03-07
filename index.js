@@ -4,7 +4,6 @@ require('./db_connection/mongodb');
 const userRouter = require('./routers/user')
 const productsRouter = require('./routers/products')
 const authenticationMiddleware = require('./middlewares/authentication');
-const uploadImgMiddleware = require('./middlewares/imgStorage')
 const logsMiddleware = require('./middlewares/logs');
 const errorHandlerMiddleware = require('./middlewares/errorhandler');
 var bodyParser = require('body-parser');
@@ -23,7 +22,7 @@ app.use(express.static('public'));
 app.use(express.json());
 
 app.use( '/api/users',logsMiddleware,userRouter);
-app.use( '/api/products',logsMiddleware,uploadImgMiddleware,productsRouter);
+app.use( '/api/products',logsMiddleware,productsRouter);
 
 app.use(errorHandlerMiddleware)
 

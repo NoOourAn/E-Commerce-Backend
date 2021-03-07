@@ -13,7 +13,7 @@ const ProductsSchema = new mongoose.Schema({
                 {
                         data: Buffer,
                         contentType: String,
-                        required: [true, "can't be blank"],
+                    //    required: [true, "can't be blank"],
                    },
 
         description: {    type: String,
@@ -88,5 +88,5 @@ const ProductsSchema = new mongoose.Schema({
 , {timestamps: true}
 )
 
-const ProductsSchema = mongoose.model('Product', ProductsSchema);
+const Product = mongoose.model('Product', ProductsSchema);
 module.exports = Product;
