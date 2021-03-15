@@ -2,7 +2,7 @@ const express = require('express');
 const router = new express.Router();
 //const upload = require('../middlewares/imgStorage')
 const Product = require("../models/products");
-// const uploadImgMiddleware = require('../middlewares/imgStorage')
+const uploadImgMiddleware = require('../middlewares/imgStorage')
 
 
 var multer = require('multer');
