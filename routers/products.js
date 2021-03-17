@@ -23,8 +23,8 @@ router.post('/', upload.single('image'), async(req, res) => {
     try {
         const { name, description, category, brand, numberInStock, price } = req.body
         const img = {
-            data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-            contentType: 'image/png'
+            // data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
+            // contentType: 'image/png'
         }
         if (name && img && category && brand && numberInStock && price) {
             let product;
@@ -161,22 +161,23 @@ router.delete('/:productId/comments/:commentId', async(req, res) => {
 
 router.get('/', async(req, res) => {
     try {
-        const userById = await User.findById(req.signedData.id);
+       // const userById = await User.findById(req.signedData.id);
         const { name, category, brand, maxPrice, minPrice, id, latestdate, oldestdate } = req.query;
         if (name) {
             products = await Product.find({ name: name });
         } else if (category) {
             products = await Product.find({ category: category });
         } else if (brand) {
+            console.log(req.params)
             products = await Product.find({ brand: brand });
         } else if (maxPrice) {
             products = await Product.find().sort({ price: -1 });
         } else if (minPrice) {
-            products = await Product.find({ price: 1 });
+            products = await Product.find().sort({ price: 1 });
         } else if (latestdate) {
-            products = await Product.find().sort({ createdAt: 'asc' }).exec();
+            products = await Product.find().sort({ createdAt: 'desc' }).exec();
         } else if (oldestdate) {
-            products = await Product.find().sort({ createdAt: 'desc' }).exec();;
+            products = await Product.find().sort({ createdAt: 'asc' }).exec();;
         } else if (id) {
             products = await Product.find({ _id: id });
         } else {
@@ -196,7 +197,7 @@ router.get('/', async(req, res) => {
 
 router.get('/getCategory', async(req, res) => {
     try {
-        const { category } = req.query;
+       // const { category } = req.query;
         products = await Product.find({});
         const CategoryArr = []
         for (let c in products) {
@@ -215,7 +216,7 @@ router.get('/getCategory', async(req, res) => {
 
 router.get('/getBrand', async(req, res) => {
     try {
-        const { brand } = req.query;
+     //   const { brand } = req.query;
         products = await Product.find({});
         const brandArr = []
         for (let c in products) {

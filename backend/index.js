@@ -19,7 +19,7 @@ require('dotenv/config');
 const app = express();
 app.use(cors())
 
-app.use(express.static('public'));
+app.use(express.static('public'));  
 app.use(express.json());
 
 app.use('/api/users', logsMiddleware, userRouter);
@@ -30,6 +30,6 @@ app.use('/api/orders', logsMiddleware, ordersRouter);
 app.use(errorHandlerMiddleware)
 
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(3000, () => {
     console.info(`server listening on port 3000`);
 });
