@@ -2,10 +2,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user')
 
 
-module.exports = (req, res, next) => {
+module.exports = async(req, res, next) => {
     try {
         const signedData = jwt.verify(req.headers.access_token, 'my-signing-secret');
-        const user = User.findById(signedData.id)
+        const user = await User.findById(signedData.id)
+        console.log(user.username);
         if (user.username == "admin") {
             req.type = "admin"
         } else {
