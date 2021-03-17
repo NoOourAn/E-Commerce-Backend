@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_DB || 'mongodb+srv://ahmed:791995@e-commerce.uldwf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true },
+mongoose.connect(process.env.MONGO_DB || 'mongodb://localhost/E-Commerce-Backend', { useNewUrlParser: true, useUnifiedTopology: true },
 
     (err) => {
         if (err) {
