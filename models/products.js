@@ -16,7 +16,7 @@ const ProductsSchema = new mongoose.Schema({
                     //    required: [true, "can't be blank"],
                    },
 
-        description: {    type: String,
+        description: {  type: String,
                         min: 1,
                         max: 500,
                     },
