@@ -28,6 +28,7 @@ orderRouter.use(authenticationMiddleware)
 orderRouter.get('/', async(req, res) => {
     try {
         let orders;
+        console.log(req.type);
         if (req.type == "admin")
             orders = await Orders.find({});
         else
@@ -45,7 +46,7 @@ orderRouter.get('/', async(req, res) => {
 
 // user can post order
 orderRouter.post('/', async(req, res) => {
-    console.log(req);
+    // console.log(req);
     console.log(req.body);
 
     try {

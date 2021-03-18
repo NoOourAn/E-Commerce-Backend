@@ -162,6 +162,7 @@ router.delete('/:productId/comments/:commentId', async(req, res) => {
 router.get('/', async(req, res) => {
     try {
        // const userById = await User.findById(req.signedData.id);
+        //  const userById = await User.findById(req.signedData.id);
         const { name, category, brand, maxPrice, minPrice, id, latestdate, oldestdate } = req.query;
         if (name) {
             products = await Product.find({ name: name });
