@@ -1,27 +1,9 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const Orders = require('../models/order');
 const authenticationMiddleware = require('../middlewares/authentication');
 const orderRouter = new express.Router();
 
 orderRouter.use(authenticationMiddleware)
-
-// admin can view all orders
-// orderRouter.get('/admin', async(req, res) => {
-//     try {
-//         const allOrders = await Orders.find({});
-//         console.log(allOrders);
-//         res.send(allOrders)
-//     } catch (err) {
-//         console.error(err);
-//         res.statusCode = 404;
-//         res.json({ success: false, message: err.message });
-//     }
-// })
-
-
-
 
 
 // user can get his orders
