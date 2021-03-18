@@ -1,48 +1,50 @@
 const express = require('express');
 const router = new express.Router();
-//const upload = require('../middlewares/imgStorage')
 const Product = require("../models/products");
-// const uploadImgMiddleware = require('../middlewares/imgStorage')
+var multer  = require('multer');
 
-
-var multer = require('multer');
-
+////saves the uploaded image to the server storage
 var storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'uploads')
+      cb(null, './public');
     },
     filename: (req, file, cb) => {
-        cb(null, file.fieldname + '-' + Date.now())
+      var filetype = '';
+      if(file.mimetype === 'image/gif') {
+        filetype = 'gif';
+      }
+      if(file.mimetype === 'image/png') {
+        filetype = 'png';
+      }
+      if(file.mimetype === 'image/jpeg') {
+        filetype = 'jpg';
+      }
+      cb(null, 'image-' + Date.now() + '.' + filetype);
     }
 });
 
-var upload = multer({ storage: storage });
+var upload = multer({storage: storage});
+
 
 ///api to create new product
-router.post('/', upload.single('image'), async(req, res) => {
+router.post('/', upload.single('file'), async(req, res) => {
     try {
-        const { name, description, category, brand, numberInStock, price } = req.body
-        const img = {
-            // data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-            // contentType: 'image/png'
-        }
-        if (name && img && category && brand && numberInStock && price) {
-            let product;
-
-            if (description && description !== 'null')
-                product = await Product.create({ name, img, description, category, brand, numberInStock, price, totalRating: 1 })
-            else
-                product = await Product.create({ name, img, category, brand, numberInStock, price, totalRating: 1 })
-
+        req.body.totalRating = 1;
+        const { name, category, brand, numberInStock, price } = req.body  ////required fields
+        if (name && category && brand && numberInStock && price) {
+            if(req.file){
+                req.body.imgUrl = 'http://localhost:3000/' + req.file.filename;
+            }
+            const product = await Product.create(req.body)
             const obj = {
                 success: true,
                 message: "product was created succesfully",
                 product: product
             }
             res.send(obj)
-        } else throw new Error("name, image ,category ,brand,numberInStock and price are required")
+        } else throw new Error("name ,category ,brand,numberInStock and price are required")
     } catch (err) {
-        res.json({ success: false, message: err.message })
+        res.send({ success: false, message: err.message })
     }
 })
 

@@ -1,40 +1,34 @@
 const mongoose = require('mongoose');
 
 const ProductsSchema = new mongoose.Schema({
-
-    //fadel el img
     
-         name: {    type: String,
-                        min: 1,
-                        max: 100,
-                        required: [true, "can't be blank"],
-                    },
-        img:
-                {
-                        data: Buffer,
-                        contentType: String,
-                    //    required: [true, "can't be blank"],
-                   },
-
-        description: {    type: String,
-                        min: 1,
-                        max: 500,
-                    },
+        name: {    
+            type: String,
+            min: 1,
+            max: 100,
+            required: [true, "can't be blank"],
+        },
+        imgUrl: { type: String },
+        description: { 
+            type: String,
+            min: 1,
+            max: 500,
+        },
         category:{
             type: String,
-             min: 1,
-             max: 50,
-             required: [true, "can't be blank"],
+            min: 1,
+            max: 50,
+            required: [true, "can't be blank"],
         },
-          brand:{
+        brand:{
             type: String,
-             min: 1,
-             max: 50,
-             required: [true, "can't be blank"],
+            min: 1,
+            max: 50,
+            required: [true, "can't be blank"],
         },
         numberInStock:{
             type:Number,
-             required: [true, "can't be blank"]
+            required: [true, "can't be blank"]
         },
         price:{
             type:Number,
@@ -47,8 +41,7 @@ const ProductsSchema = new mongoose.Schema({
             min:1,
             max:5,
         },
-        ratings:[  
-        {
+        ratings:[{
             user :{
                 type:mongoose.Schema.Types.ObjectId,
                 ref:'User'
@@ -57,15 +50,11 @@ const ProductsSchema = new mongoose.Schema({
                 type:Number,
                 min:0,
                 max:5,
-            }
-            
-        }
-        ],
+            } 
+        }],
                   
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        comments:[
-            
-            {
+        comments:[{
             body :{
                  type: String,
                  min: 1,
@@ -82,9 +71,7 @@ const ProductsSchema = new mongoose.Schema({
                 default: Date.now()
             }
             
-        }
-        
-        ]
+        }]
 }
 , {timestamps: true}
 )
