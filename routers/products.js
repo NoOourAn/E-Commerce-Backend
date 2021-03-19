@@ -198,6 +198,22 @@ router.get('/', async(req, res) => {
     }
 })
 
+router.get('/:id', async(req, res) => {
+    try {
+        products = await Product.find({ _id:req.params.id });
+        const obj = {
+            statusCode: 201,
+            success: true,
+            products: products
+        }
+        res.send(obj)
+     
+    } catch (err) {
+        res.json({ statusCode: 422 ,success: false, message: err.message });
+
+    }
+})
+
 
 
 router.get('/getCategory', async(req, res) => {
