@@ -4,10 +4,36 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user')
 const authenticationMiddleware = require('../middlewares/authentication');
 const userRouter = new express.Router();
+var multer  = require('multer');
 
+
+////saves the uploaded image to the server storage
+var storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, './public');
+    },
+    filename: (req, file, cb) => {
+      var filetype = '';
+      if(file.mimetype === 'image/gif') {
+        filetype = 'gif';
+      }
+      if(file.mimetype === 'image/png') {
+        filetype = 'png';
+      }
+      if(file.mimetype === 'image/jpeg') {
+        filetype = 'jpg';
+      }
+      cb(null, 'image-' + Date.now() + '.' + filetype);
+    }
+});
+
+var upload = multer({storage: storage});
+
+
+///admin can get all users
 userRouter.get('/getUsers', async(req, res) => {
     try {
-        const users = await User.find({}); // just to get all users for me to test
+        const users = await User.find({});
         const obj = {
             success: true,
             users: users
@@ -19,13 +45,25 @@ userRouter.get('/getUsers', async(req, res) => {
     }
 })
 
-userRouter.post('/reg', async(req, res) => { // the registration router
+userRouter.post('/reg', upload.single('file') ,async(req, res) => { // the registration router
     try {
         const { username, email, password } = req.body;
-        const hash = await bcrypt.hash(password, 7); // to hash the password
-        const user = await User.create({ username, email, password: hash })
-        res.statusCode = 201;
-        res.send({ success: true, user: user });
+        if (username && email && password) {
+            if(req.file){
+                req.body.imgUrl = 'http://localhost:3000/' + req.file.filename;
+                req.body.imgName = req.file.filename;
+            }
+            const hash = await bcrypt.hash(password, 7); // to hash the password
+            req.body.password = hash
+            const user = await User.create(req.body)
+            console.log(user)
+            const obj = {
+                success: true,
+                message: "you registered succesfully",
+                user: user
+            }
+            res.send(obj)
+        } else throw new Error("username , email , password are required")   
     } catch (err) {
         res.json({ statusCode: 422 ,success: false, message: "Duplicated User" });
     }
@@ -39,7 +77,7 @@ userRouter.post('/login', async(req, res) => { // the login router
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new Error("wrong username or password");
         const token = jwt.sign({ id: user.id }, 'my-signing-secret');
-        res.json({ success: true, token });
+        res.json({ success: true, token , user });
     } catch (err) {
         res.json({ statusCode: 422 ,success: false, message: "username or password is invalid" });
 
@@ -63,10 +101,29 @@ userRouter.get('/myProfile', async(req, res) => { // will show the info of my pr
     }
 })
 
-userRouter.patch('/profileUpdate', async(req, res) => { // update router for user
+/////update profile data
+userRouter.patch('/profileUpdate',async(req, res) => { // update router for user
     try {
         const { username, email } = req.body;
         const user = await User.updateOne({ _id: req.signedData.id }, { $set: { username: username, email: email } });
+        
+        const obj = {
+            success: true,
+            message: "profile was edited succesfully",
+            user: user
+        }
+        res.send(obj);
+    } catch (err) {
+        console.error(err);
+        res.json({ success: false, message: err.message });
+    }
+})
+/////////update profile img
+userRouter.patch('/imgUpdate', upload.single('file') ,async(req, res) => { // update router for user
+    try {
+        const { username, email } = req.body;
+        const user = await User.updateOne({ _id: req.signedData.id }, { $set: { username: username, email: email } });
+        
         const obj = {
             success: true,
             message: "profile was edited succesfully",

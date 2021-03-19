@@ -16,9 +16,6 @@ module.exports = async(req, res, next) => {
         req.signedData = signedData;
         next();
     } catch (err) {
-        console.log(req.headers);
-        console.error(err);
-        res.statusCode = 401;
-        res.json({ success: false, message: "Authentication failed" });
+        res.json({ statusCode: 401 ,success: false, message: "Authentication failed" });
     }
 }
