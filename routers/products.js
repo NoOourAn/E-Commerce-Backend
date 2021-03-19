@@ -75,7 +75,7 @@ router.route('/:id')
             const obj = {
                 success: true,
                 message: (product) ? "product edited successfully" : "product not found",
-                todo: todo
+                product: product
             }
             res.send(obj);
         } catch (err) {
@@ -187,12 +187,14 @@ router.get('/', async(req, res) => {
             products = await Product.find({});
         }
 
-        res.statusCode = 201;
-        res.send(products)
+        const obj = {
+            statusCode: 201,
+            success: true,
+            products: products
+        }
+        res.send(obj)
     } catch (err) {
-        console.error(err);
-        res.statusCode = 422;
-        res.json({ success: false, message: err.message });
+        res.json({ statusCode: 422 ,success: false, message: err.message });
     }
 })
 
@@ -208,12 +210,15 @@ router.get('/getCategory', async(req, res) => {
                 CategoryArr.push(c.category);
             }
         }
-        res.statusCode = 201;
-        res.send(CategoryArr)
+        const obj = {
+            statusCode: 201,
+            success: true,
+            categories: CategoryArr
+        }
+        res.send(obj)
     } catch (err) {
-        console.error(err);
-        res.statusCode = 422;
-        res.json({ success: false, message: err.message });
+        res.json({ statusCode: 422 ,success: false, message: err.message });
+
     }
 })
 
@@ -227,12 +232,15 @@ router.get('/getBrand', async(req, res) => {
                 brandArr.push(c.brand);
             }
         }
-        res.statusCode = 201;
-        res.send(brandArr)
+        const obj = {
+            statusCode: 201,
+            success: true,
+            brands: brandArr
+        }
+        res.send(obj)
     } catch (err) {
-        console.error(err);
-        res.statusCode = 422;
-        res.json({ success: false, message: err.message });
+        res.json({ statusCode: 422 ,success: false, message: err.message });
+
     }
 })
 

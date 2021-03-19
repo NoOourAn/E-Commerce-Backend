@@ -16,12 +16,15 @@ orderRouter.get('/', async(req, res) => {
         else
             orders = await Orders.find({ user: req.signedData.id });
 
-        res.send(orders);
+        const obj = {
+            statusCode: 201,
+            success: true,
+            orders: orders
+        }
+        res.send(obj)
 
-    } catch (error) {
-        console.error(error);
-        res.statusCode = 422;
-        res.json({ success: false, message: error.message });
+    } catch (err) {
+        res.json({ statusCode: 422 ,success: false, message: err.message });
     }
 
 })
@@ -36,13 +39,17 @@ orderRouter.post('/', async(req, res) => {
         console.log(products);
 
         const order = await Orders.create({ user: req.signedData.id, totalPrice, products })
-        res.statusCode = 201;
-        res.send(order);
+
+        const obj = {
+            statusCode: 201,
+            success: true,
+            message: "order was created succesfully",
+            order: order
+        }
+        res.send(obj)
 
     } catch (err) {
-        console.error(err);
-        res.statusCode = 422;
-        res.json({ success: false, message: err.message });
+        res.json({ statusCode: 422 ,success: false, message: err.message });
     }
 
 
@@ -54,11 +61,16 @@ orderRouter.patch('/:id', async(req, res) => {
     try {
 
         const order = await Orders.updateOne({ _id: req.params.id }, { status: req.body.status });
-        res.send(order);
-    } catch (error) {
-        console.error(error);
-        res.statusCode = 422;
-        res.json({ success: false, message: error.message });
+        const obj = {
+            statusCode: 201,
+            success: true,
+            message: "order was edited succesfully",
+            order: order
+        }
+        res.send(obj)    
+    } catch (err) {
+        res.json({ statusCode: 422 ,success: false, message: err.message });
+
     }
 })
 
@@ -74,10 +86,9 @@ orderRouter.delete('/:id', async(req, res) => {
             const order = await Orders.deleteOne({ _id: req.params.id, user: req.signedData.id });
             res.json({ success: true, message: "order deleted successfully" });
         } else res.json({ success: false, message: "order not pending" });
-    } catch (error) {
-        console.error(error);
-        res.statusCode = 422;
-        res.json({ success: false, message: error.message });
+    } catch (err) {
+        res.json({ statusCode: 422 ,success: false, message: err.message });
+
     }
 })
 
