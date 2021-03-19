@@ -9,6 +9,7 @@ const ProductsSchema = new mongoose.Schema({
             required: [true, "can't be blank"],
         },
         imgUrl: { type: String },
+        imgName: { type: String },
         description: { 
             type: String,
             min: 1,

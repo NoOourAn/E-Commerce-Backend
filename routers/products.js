@@ -34,6 +34,7 @@ router.post('/', upload.single('file'), async(req, res) => {
         if (name && category && brand && numberInStock && price) {
             if(req.file){
                 req.body.imgUrl = 'http://localhost:3000/' + req.file.filename;
+                req.body.imgName = req.file.filename;
             }
             const product = await Product.create(req.body)
             const obj = {
@@ -54,6 +55,11 @@ router.route('/:id')
         try {
             const { id } = req.params;
             const product = await Product.findByIdAndDelete(id)
+            ////to delete the image from server storage
+            fs.unlink(`./public/${product.imgName}`,function(err){
+                if(err) throw err;
+                console.log('image deleted successfully');
+            });
             const obj = {
                 success: true,
                 message: (product) ? "product deleted successfully" : "product not found"
@@ -67,10 +73,6 @@ router.route('/:id')
         try {
             const { id } = req.params;
             const { name, description, category, brand, numberInStock, price } = req.body
-            const img = {
-                data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.file.filename)),
-                contentType: 'image/png'
-            }
             const product = await Product.findByIdAndUpdate(id, { name, description, category, brand, numberInStock, price }, { returnOriginal: false })
             const obj = {
                 success: true,
