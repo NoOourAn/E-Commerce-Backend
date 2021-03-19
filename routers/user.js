@@ -50,7 +50,7 @@ userRouter.post('/reg', upload.single('file') ,async(req, res) => { // the regis
         const { username, email, password } = req.body;
         if (username && email && password) {
             if(req.file){
-                req.body.imgUrl = 'http://localhost:3000/' + req.file.filename;
+                req.body.imgUrl =  req.url + req.file.filename;  ///'http://localhost:3000/'
                 req.body.imgName = req.file.filename;
             }
             const hash = await bcrypt.hash(password, 7); // to hash the password
@@ -76,7 +76,7 @@ userRouter.post('/login', async(req, res) => { // the login router
         if (!user) throw new Error("wrong username or password");
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new Error("wrong username or password");
-        const token = jwt.sign({ id: user.id }, 'my-signing-secret');
+        const token = jwt.sign({ id: user.id }, process.env.SecretKey);
         res.json({ success: true, token , user });
     } catch (err) {
         res.json({ statusCode: 422 ,success: false, message: "username or password is invalid" });
