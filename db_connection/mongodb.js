@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-mongoose.set('bufferCommands', false);
-mongoose.set('autoCreate', false);
 
 //DB Connection
 getConnection = async () => {
