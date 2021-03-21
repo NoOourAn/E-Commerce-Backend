@@ -8,7 +8,8 @@ getConnection = async () => {
             useNewUrlParser: true, 
             useUnifiedTopology: true , 
             useFindAndModify:false,
-            useCreateIndex: true
+            useCreateIndex: true,
+            bufferCommands: false
         });
         console.log('Database connected Successfully!');
     } catch (err) {
