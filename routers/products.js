@@ -33,7 +33,7 @@ router.post('/', upload.single('file'), async(req, res) => {
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
             if(req.file){
-                req.body.imgUrl = 'http://localhost:3000/' + req.file.filename;
+                req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
                 req.body.imgName = req.file.filename;
             }
             const product = await Product.create(req.body)
