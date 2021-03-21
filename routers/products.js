@@ -186,7 +186,7 @@ router.get('/', async(req, res) => {
         } else if (id) {
             products = await Product.find({ _id: id });
         } else {
-            products = await Product.find({});
+            products = await Product.find();
         }
 
         const obj = {
