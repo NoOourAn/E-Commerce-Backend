@@ -2,6 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const Product = require("../models/products");
 var multer  = require('multer');
+const fs = require('fs');
 
 ////saves the uploaded image to the server storage
 var storage = multer.diskStorage({
