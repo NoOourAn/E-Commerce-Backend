@@ -5,6 +5,7 @@ const User = require('../models/user')
 const authenticationMiddleware = require('../middlewares/authentication');
 const userRouter = new express.Router();
 var multer  = require('multer');
+const fs = require('fs');
 
 
 ////saves the uploaded image to the server storage
