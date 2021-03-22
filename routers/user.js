@@ -125,7 +125,9 @@ userRouter.patch('/imgUpdate', upload.single('file') ,async(req, res) => { // up
         if(req.file){
             req.body.imgUrl =  req.url + req.file.filename;  ///'http://localhost:3000/'
             req.body.imgName = req.file.filename;
-            const user = await User.findByIdAndUpdate(req.signedData.id , { imgUrl:req.body.imgUrl,imgName:req.body.imgName  }, { returnOriginal: true })
+            // const user = await User.findByIdAndUpdate(req.signedData.id , { imgUrl:req.body.imgUrl,imgName:req.body.imgName  }, { returnOriginal: true })
+            const user = await User.updateOne({ _id: req.signedData.id }, { $set: { imgUrl:req.body.imgUrl,imgName:req.body.imgName } });
+
             ////to delete the image from server storage
             if(user.imgName){
                 fs.unlink(`./public/${user.imgName}`,function(err){
