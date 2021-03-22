@@ -49,17 +49,19 @@ router.post('/', upload.single('file'), async(req, res) => {
     }
 })
 
-///MANIPULATE product comments with ID
+///MANIPULATE product with ID
 router.route('/:id')
     .delete(async(req, res) => { ///delete product
         try {
             const { id } = req.params;
             const product = await Product.findByIdAndDelete(id)
             ////to delete the image from server storage
-            fs.unlink(`./public/${product.imgName}`,function(err){
-                if(err) throw err;
-                console.log('image deleted successfully');
-            });
+            if(product.imgName){
+                fs.unlink(`./public/${product.imgName}`,function(err){
+                    if(err) throw err;
+                    console.log('image deleted successfully');
+                });
+            }
             const obj = {
                 success: true,
                 message: (product) ? "product deleted successfully" : "product not found"
@@ -73,11 +75,17 @@ router.route('/:id')
         try {
             const { id } = req.params;
             const { name, description, category, brand, numberInStock, price } = req.body
-            const product = await Product.findByIdAndUpdate(id, { name, description, category, brand, numberInStock, price }, { returnOriginal: false })
+            const product = await Product.findByIdAndUpdate(id, { name, description, category, brand, numberInStock, price }, { returnOriginal: true })
+            ////to delete the image from server storage
+            if(product.imgName){
+                fs.unlink(`./public/${product.imgName}`,function(err){
+                    if(err) throw err;
+                    console.log('image deleted successfully');
+                });
+            }
             const obj = {
                 success: true,
                 message: (product) ? "product edited successfully" : "product not found",
-                product: product
             }
             res.send(obj);
         } catch (err) {
@@ -156,11 +164,6 @@ router.delete('/:productId/comments/:commentId', async(req, res) => {
         res.json({ success: false, message: err.message })
     }
 })
-
-// name cat maxprice minprice id brand all date
-
-
-
 
 
 router.get('/', async(req, res) => {
