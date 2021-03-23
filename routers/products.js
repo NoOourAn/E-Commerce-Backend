@@ -81,12 +81,12 @@ router.route('/:id')
             }
             const product = await Product.findByIdAndUpdate(id, req.body, { returnOriginal: true })
             ////to delete the old image from server storage
-            if(product.imgName){
-                fs.unlink(`./public/${product.imgName}`,function(err){
-                    if(err) throw err;
-                    console.log('image deleted successfully');
-                });
-            }
+            // if(product.imgName){
+            //     fs.unlink(`./public/${product.imgName}`,function(err){
+            //         if(err) throw err;
+            //         console.log('image deleted successfully');
+            //     });
+            // }
             const obj = {
                 success: true,
                 message: (product) ? "product edited successfully" : "product not found",
