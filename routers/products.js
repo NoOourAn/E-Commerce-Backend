@@ -72,12 +72,15 @@ router.route('/:id')
             res.json({ success: false, message: err.message })
         }
     })
-    .patch(upload.single('image'), async(req, res) => { ///edit product
-        try {
+    .patch(upload.single('file'), async(req, res) => { ///edit product
+        try {                
             const { id } = req.params;
-            const { name, description, category, brand, numberInStock, price } = req.body
-            const product = await Product.findByIdAndUpdate(id, { name, description, category, brand, numberInStock, price }, { returnOriginal: true })
-            ////to delete the image from server storage
+            if(req.file){
+                req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
+                req.body.imgName = req.file.filename;
+            }
+            const product = await Product.findByIdAndUpdate(id, req.body, { returnOriginal: true })
+            ////to delete the old image from server storage
             if(product.imgName){
                 fs.unlink(`./public/${product.imgName}`,function(err){
                     if(err) throw err;
