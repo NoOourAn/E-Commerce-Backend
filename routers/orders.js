@@ -6,7 +6,7 @@ const orderRouter = new express.Router();
 orderRouter.use(authenticationMiddleware)
 
 
-// user can get his orders
+// user can get his orders or admin
 orderRouter.get('/', async(req, res) => {
     try {
         let orders;
@@ -59,15 +59,17 @@ orderRouter.post('/', async(req, res) => {
 orderRouter.patch('/:id', async(req, res) => {
     const { status } = req.body;
     try {
+        if (req.type == "admin"){
 
-        const order = await Orders.updateOne({ _id: req.params.id }, { status: req.body.status });
-        const obj = {
-            statusCode: 201,
-            success: true,
-            message: "order was edited succesfully",
-            order: order
-        }
-        res.send(obj)    
+            const order = await Orders.updateOne({ _id: req.params.id }, { status: req.body.status });
+            const obj = {
+                statusCode: 201,
+                success: true,
+                message: "order was edited succesfully",
+                order: order
+            }
+            res.send(obj)    
+        }else res.json({ success: false, message: "not authorized as admin" });
     } catch (err) {
         res.json({ statusCode: 422 ,success: false, message: err.message });
 
@@ -75,20 +77,21 @@ orderRouter.patch('/:id', async(req, res) => {
 })
 
 // user can delete order if it is pending
-
 orderRouter.delete('/:id', async(req, res) => {
     console.log(req.params.id);
     console.log(req.signedData.id)
     try {
-        const order = await Orders.findOne({ _id: req.params.id, user: req.signedData.id });
+        if (req.type == "admin")
+            const order = await Orders.findOne({ _id: req.params.id });
+        else
+            const order = await Orders.findOne({ _id: req.params.id, user: req.signedData.id });
         console.log(order);
-        if (order.status == "pending") {
+        if (order && order.status == "pending") {
             const order = await Orders.deleteOne({ _id: req.params.id, user: req.signedData.id });
             res.json({ success: true, message: "order deleted successfully" });
         } else res.json({ success: false, message: "order not pending" });
     } catch (err) {
         res.json({ statusCode: 422 ,success: false, message: err.message });
-
     }
 })
 
