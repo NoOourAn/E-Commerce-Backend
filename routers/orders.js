@@ -81,13 +81,14 @@ orderRouter.delete('/:id', async(req, res) => {
     console.log(req.params.id);
     console.log(req.signedData.id)
     try {
+        let order
         if (req.type == "admin")
-            const order = await Orders.findOne({ _id: req.params.id });
+            order = await Orders.findOne({ _id: req.params.id });
         else
-            const order = await Orders.findOne({ _id: req.params.id, user: req.signedData.id });
+            order = await Orders.findOne({ _id: req.params.id, user: req.signedData.id });
         console.log(order);
         if (order && order.status == "pending") {
-            const order = await Orders.deleteOne({ _id: req.params.id, user: req.signedData.id });
+            order = await Orders.deleteOne({ _id: req.params.id, user: req.signedData.id });
             res.json({ success: true, message: "order deleted successfully" });
         } else res.json({ success: false, message: "order not pending" });
     } catch (err) {
