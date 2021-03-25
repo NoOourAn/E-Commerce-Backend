@@ -2,6 +2,7 @@ const express = require('express');
 const router = new express.Router();
 const Product = require("../models/products");
 var multer  = require('multer');
+const multerS3 = require('multer-s3');
 const fs = require('fs');
 const AWS = require('aws-sdk');
 
@@ -20,28 +21,63 @@ const s3 = new AWS.S3({
 });
 
 ////saves the uploaded image to the server storage
-var storage = multer.diskStorage({
-    // destination: (req, file, cb) => {
-    //   cb(null, './public');
-    // },
-    filename: (req, file, cb) => {
-      var filetype = '';
-      if(file.mimetype === 'image/gif') {
-        filetype = 'gif';
-      }
-      if(file.mimetype === 'image/png') {
-        filetype = 'png';
-      }
-      if(file.mimetype === 'image/jpeg') {
-        filetype = 'jpg';
-      }
-      cb(null, 'image-' + Date.now() + '.' + filetype);
-    }
-});
+// var storage = multer.diskStorage({
+//     // destination: (req, file, cb) => {
+//     //   cb(null, './public');
+//     // },
+//     filename: (req, file, cb) => {
+//       var filetype = '';
+//       if(file.mimetype === 'image/gif') {
+//         filetype = 'gif';
+//       }
+//       if(file.mimetype === 'image/png') {
+//         filetype = 'png';
+//       }
+//       if(file.mimetype === 'image/jpeg') {
+    //         filetype = 'jpg';
+    //       }
+    //       cb(null, 'image-' + Date.now() + '.' + filetype);
+    //     }
+    // });
+    
 
-var upload = multer({storage: storage} ); //{storage: storage} 
+//var upload = multer({storage: storage} ); //{storage: storage} 
 // multer(opts) omit the options object, the files will be kept 
 //in memory and never written to disk
+
+///// to upload to AWS S3 
+const upload = multer({
+    limits: {
+      fileSize: 1048576 // 1MB
+    },
+    fileFilter: ImageValidationHelper.imageFilter,
+    storage: multerS3({
+      s3: s3,
+      bucket: BUCKET_NAME,
+      acl: 'public-read',
+      cacheControl: 'max-age=31536000',
+      contentType: multerS3.AUTO_CONTENT_TYPE,
+      metadata: function (req, file, cb) {
+        cb(null, {fieldName: file.fieldname});
+      },
+      key: function (req, file, cb) {
+        //const key = `user-profile-images/${process.env.NODE_ENV}_${Date.now().toString()}${path.extname(file.originalname)}`
+        var filetype = '';
+        if(file.mimetype === 'image/gif') {
+            filetype = 'gif';
+        }
+        if(file.mimetype === 'image/png') {
+            filetype = 'png';
+        }
+        if(file.mimetype === 'image/jpeg') {
+            filetype = 'jpg';
+        }
+        const key = 'image-' + Date.now() + '.' + filetype;
+        cb(null, key);
+      }
+    }),
+  });
+
 
 
 ///api to create new product
@@ -50,28 +86,29 @@ router.post('/', upload.single('file'), async(req, res) => {
         req.body.totalRating = 1;
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
-            if(req.file){
-                console.log(req)
+            // if(req.file){
+            //     console.log(req)
+                // req.body.imgUrl = req.file.key
                 //for mongo database
                 // req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
                 // req.body.imgName = req.file.filename;
             
                 // Setting up S3 upload parameters
-                const params = {
-                    Bucket: BUCKET_NAME,
-                    Key: req.file.filename, // File name you want to save as in S3
-                    Body: req.file,
-                    ContentType: req.file.mimetype
-                };
+                // const params = {
+                //     Bucket: BUCKET_NAME,
+                //     Key: req.file.filename, // File name you want to save as in S3
+                //     Body: req.file,
+                //     ContentType: req.file.mimetype
+                // };
 
                 // Uploading files to the bucket
-                s3.upload(params, function(err, data) {
-                    if (err) {
-                        throw err;
-                    }
-                    console.log(`File uploaded successfully. ${data.Location}`);
-                });
-            }
+                // s3.upload(params, function(err, data) {
+                //     if (err) {
+                //         throw err;
+                //     }
+                //     console.log(`File uploaded successfully. ${data.Location}`);
+                // });
+            // }
             const product = await Product.create(req.body)
             const obj = {
                 success: true,
