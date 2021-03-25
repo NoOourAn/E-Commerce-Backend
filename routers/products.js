@@ -88,7 +88,8 @@ router.post('/', upload.single('file'), async(req, res) => {
         if (name && category && brand && numberInStock && price) {
             // if(req.file){
             //     console.log(req)
-                // req.body.imgUrl = req.file.key
+                req.body.imgUrl = req.file.location;
+                req.body.imgName = req.file.key;
                 //for mongo database
                 // req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
                 // req.body.imgName = req.file.filename;
