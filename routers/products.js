@@ -50,7 +50,6 @@ const upload = multer({
     limits: {
       fileSize: 1048576 // 1MB
     },
-    fileFilter: ImageValidationHelper.imageFilter,
     storage: multerS3({
       s3: s3,
       bucket: BUCKET_NAME,
