@@ -20,31 +20,6 @@ const s3 = new AWS.S3({
     secretAccessKey: SECRET
 });
 
-////saves the uploaded image to the server storage
-// var storage = multer.diskStorage({
-//     // destination: (req, file, cb) => {
-//     //   cb(null, './public');
-//     // },
-//     filename: (req, file, cb) => {
-//       var filetype = '';
-//       if(file.mimetype === 'image/gif') {
-//         filetype = 'gif';
-//       }
-//       if(file.mimetype === 'image/png') {
-//         filetype = 'png';
-//       }
-//       if(file.mimetype === 'image/jpeg') {
-    //         filetype = 'jpg';
-    //       }
-    //       cb(null, 'image-' + Date.now() + '.' + filetype);
-    //     }
-    // });
-    
-
-//var upload = multer({storage: storage} ); //{storage: storage} 
-// multer(opts) omit the options object, the files will be kept 
-//in memory and never written to disk
-
 ///// to upload to AWS S3 
 const upload = multer({
     storage: multerS3({
@@ -82,30 +57,11 @@ router.post('/', upload.single('file'), async(req, res) => {
         req.body.totalRating = 1;
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
-            // if(req.file){
-            //     console.log(req)
+            if(req.file){
+                //for mongo database      
                 req.body.imgUrl = req.file.location;
                 req.body.imgName = req.file.key;
-                //for mongo database
-                // req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
-                // req.body.imgName = req.file.filename;
-            
-                // Setting up S3 upload parameters
-                // const params = {
-                //     Bucket: BUCKET_NAME,
-                //     Key: req.file.filename, // File name you want to save as in S3
-                //     Body: req.file,
-                //     ContentType: req.file.mimetype
-                // };
-
-                // Uploading files to the bucket
-                // s3.upload(params, function(err, data) {
-                //     if (err) {
-                //         throw err;
-                //     }
-                //     console.log(`File uploaded successfully. ${data.Location}`);
-                // });
-            // }
+            }
             const product = await Product.create(req.body)
             const obj = {
                 success: true,
@@ -126,13 +82,7 @@ router.route('/:id')
         try {
             const { id } = req.params;
             const product = await Product.findByIdAndDelete(id)
-            ////to delete the image from server storage
-            if(product.imgName){
-                fs.unlink(`./public/${product.imgName}`,function(err){
-                    if(err) throw err;
-                    console.log('image deleted successfully');
-                });
-            }
+            
             const obj = {
                 success: true,
                 message: (product) ? "product deleted successfully" : "product not found"
@@ -146,17 +96,12 @@ router.route('/:id')
         try {                
             const { id } = req.params;
             if(req.file){
-                req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
-                req.body.imgName = req.file.filename;
+                //for mongo database      
+                req.body.imgUrl = req.file.location;
+                req.body.imgName = req.file.key;
             }
             const product = await Product.findByIdAndUpdate(id, req.body, { returnOriginal: true })
-            ////to delete the old image from server storage
-            // if(product.imgName){
-            //     fs.unlink(`./public/${product.imgName}`,function(err){
-            //         if(err) throw err;
-            //         console.log('image deleted successfully');
-            //     });
-            // }
+            
             const obj = {
                 success: true,
                 message: (product) ? "product edited successfully" : "product not found",
