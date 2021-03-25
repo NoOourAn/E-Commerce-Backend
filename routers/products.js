@@ -51,6 +51,7 @@ router.post('/', upload.single('file'), async(req, res) => {
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
             if(req.file){
+                console.log(req.body)
                 //for mongo database
                 // req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
                 // req.body.imgName = req.file.filename;
@@ -59,7 +60,7 @@ router.post('/', upload.single('file'), async(req, res) => {
                 const params = {
                     Bucket: BUCKET_NAME,
                     Key: req.file.filename, // File name you want to save as in S3
-                    Body: req.file,
+                    Body: req.body.file,
                     ContentType: req.file.mimetype
                 };
 
