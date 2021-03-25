@@ -3,12 +3,27 @@ const router = new express.Router();
 const Product = require("../models/products");
 var multer  = require('multer');
 const fs = require('fs');
+const AWS = require('aws-sdk');
+
+//// AWS config
+// Enter copied or downloaded access ID and secret key here
+const ID = 'AKIAW5Z2PRQ7XIMUVW52';
+const SECRET = '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';
+
+// The name of the bucket that you have created
+const BUCKET_NAME = 'marketo-e-commerce';
+
+// initialize the S3 interface
+const s3 = new AWS.S3({
+    accessKeyId: ID,
+    secretAccessKey: SECRET
+});
 
 ////saves the uploaded image to the server storage
 var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, './public');
-    },
+    // destination: (req, file, cb) => {
+    //   cb(null, './public');
+    // },
     filename: (req, file, cb) => {
       var filetype = '';
       if(file.mimetype === 'image/gif') {
@@ -24,7 +39,9 @@ var storage = multer.diskStorage({
     }
 });
 
-var upload = multer({storage: storage});
+var upload = multer({storage: storage} ); //{storage: storage} 
+// multer(opts) omit the options object, the files will be kept 
+//in memory and never written to disk
 
 
 ///api to create new product
@@ -34,14 +51,32 @@ router.post('/', upload.single('file'), async(req, res) => {
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
             if(req.file){
-                req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
-                req.body.imgName = req.file.filename;
+                //for mongo database
+                // req.body.imgUrl = `http://${req.hostname}/` + req.file.filename;
+                // req.body.imgName = req.file.filename;
+            
+                // Setting up S3 upload parameters
+                const params = {
+                    Bucket: BUCKET_NAME,
+                    Key: req.file.filename, // File name you want to save as in S3
+                    Body: req.file,
+                    ContentType: req.file.mimetype
+                };
+
+                // Uploading files to the bucket
+                s3.upload(params, function(err, data) {
+                    if (err) {
+                        throw err;
+                    }
+                    console.log(`File uploaded successfully. ${data.Location}`);
+                });
             }
             const product = await Product.create(req.body)
             const obj = {
                 success: true,
                 message: "product was created succesfully",
-                product: product
+                product: product,
+                ContentType: req.file.mimetype
             }
             res.send(obj)
         } else throw new Error("name ,category ,brand,numberInStock and price are required")
