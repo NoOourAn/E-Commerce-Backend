@@ -8,27 +8,49 @@ var multer  = require('multer');
 const fs = require('fs');
 
 
-////saves the uploaded image to the server storage
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, './public');
-    },
-    filename: (req, file, cb) => {
-      var filetype = '';
-      if(file.mimetype === 'image/gif') {
-        filetype = 'gif';
-      }
-      if(file.mimetype === 'image/png') {
-        filetype = 'png';
-      }
-      if(file.mimetype === 'image/jpeg') {
-        filetype = 'jpg';
-      }
-      cb(null, 'image-' + Date.now() + '.' + filetype);
-    }
+//// AWS config
+// Enter copied or downloaded access ID and secret key here
+const ID = process.env.AWS_accessKeyId;
+const SECRET = process.env.AWS_secretAccessKey;
+
+// The name of the bucket that you have created
+const BUCKET_NAME = 'marketo-e-commerce';
+
+// initialize the S3 interface
+const s3 = new AWS.S3({
+    accessKeyId: ID,
+    secretAccessKey: SECRET
 });
 
-var upload = multer({storage: storage});
+///// to upload to AWS S3 
+const upload = multer({
+    storage: multerS3({
+      s3: s3,
+      bucket: BUCKET_NAME,
+      acl: 'public-read',
+      cacheControl: 'max-age=31536000',
+      contentType: multerS3.AUTO_CONTENT_TYPE,
+      metadata: function (req, file, cb) {
+        cb(null, {fieldName: file.fieldname});
+      },
+      key: function (req, file, cb) {
+        //const key = `user-profile-images/${process.env.NODE_ENV}_${Date.now().toString()}${path.extname(file.originalname)}`
+        var filetype = '';
+        if(file.mimetype === 'image/gif') {
+            filetype = 'gif';
+        }
+        if(file.mimetype === 'image/png') {
+            filetype = 'png';
+        }
+        if(file.mimetype === 'image/jpeg') {
+            filetype = 'jpg';
+        }
+        const key = 'image-' + Date.now() + '.' + filetype;
+        cb(null, key);
+      }
+    }),
+  });
+
 
 
 ///admin can get all users
@@ -51,8 +73,9 @@ userRouter.post('/reg', upload.single('file') ,async(req, res) => { // the regis
         const { username, email, password } = req.body;
         if (username && email && password) {
             if(req.file){
-                req.body.imgUrl =  req.url + req.file.filename;  ///'http://localhost:3000/'
-                req.body.imgName = req.file.filename;
+                //for mongo database      
+                req.body.imgUrl = req.file.location;
+                req.body.imgName = req.file.key;
             }
             const hash = await bcrypt.hash(password, 7); // to hash the password
             req.body.password = hash
@@ -123,18 +146,11 @@ userRouter.patch('/profileUpdate',async(req, res) => { // update router for user
 userRouter.patch('/imgUpdate', upload.single('file') ,async(req, res) => { // update image router for user
     try {
         if(req.file){
-            req.body.imgUrl =  req.url + req.file.filename;  ///'http://localhost:3000/'
-            req.body.imgName = req.file.filename;
+            //for mongo database      
+            req.body.imgUrl = req.file.location;
+            req.body.imgName = req.file.key;
             // const user = await User.findByIdAndUpdate(req.signedData.id , { imgUrl:req.body.imgUrl,imgName:req.body.imgName  }, { returnOriginal: true })
             const user = await User.updateOne({ _id: req.signedData.id }, { $set: { imgUrl:req.body.imgUrl,imgName:req.body.imgName } });
-
-            ////to delete the image from server storage
-            if(user.imgName){
-                fs.unlink(`./public/${user.imgName}`,function(err){
-                    if(err) throw err;
-                    console.log('image deleted successfully');
-                });
-            }
         }
         const obj = {
             success: true,
@@ -150,7 +166,6 @@ userRouter.patch('/imgUpdate', upload.single('file') ,async(req, res) => { // up
 
 userRouter.delete('/profileDelete', async(req, res) => {
     try { // this router will delete the user profile and its data
-        const userById = await User.findById(req.signedData.id);
         const user = await User.deleteOne({ _id: req.signedData.id }); //delete the user it self
         const obj = {
             success: true,

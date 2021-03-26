@@ -8,8 +8,8 @@ const AWS = require('aws-sdk');
 
 //// AWS config
 // Enter copied or downloaded access ID and secret key here
-const ID = 'AKIAW5Z2PRQ7XIMUVW52';
-const SECRET = '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';
+const ID = process.env.AWS_accessKeyId;
+const SECRET = process.env.AWS_secretAccessKey;
 
 // The name of the bucket that you have created
 const BUCKET_NAME = 'marketo-e-commerce';
