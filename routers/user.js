@@ -5,7 +5,9 @@ const User = require('../models/user')
 const authenticationMiddleware = require('../middlewares/authentication');
 const userRouter = new express.Router();
 var multer  = require('multer');
+const multerS3 = require('multer-s3');
 const fs = require('fs');
+const AWS = require('aws-sdk');
 
 
 //// AWS config
