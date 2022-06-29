@@ -105,6 +105,7 @@ userRouter.post('/login', async (req, res) => { // the login router
         const token = jwt.sign({ id: user.id }, process.env.SecretKey);
         res.json({ success: true, token, user });
     } catch (err) {
+        console.log(err.message)
         res.json({ statusCode: 422, success: false, message: "username or password is invalid" });
 
     }
