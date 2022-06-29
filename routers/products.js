@@ -1,7 +1,7 @@
 const express = require('express');
 const router = new express.Router();
 const Product = require("../models/products");
-var multer  = require('multer');
+var multer = require('multer');
 const multerS3 = require('multer-s3');
 const fs = require('fs');
 const AWS = require('aws-sdk');
@@ -12,7 +12,7 @@ const ID = process.env.AWS_accessKeyId;
 const SECRET = process.env.AWS_secretAccessKey;
 
 // The name of the bucket that you have created
-const BUCKET_NAME = 'marketo-e-commerce';
+const BUCKET_NAME = process.env.BUCKET_NAME;
 
 // initialize the S3 interface
 const s3 = new AWS.S3({
@@ -23,41 +23,41 @@ const s3 = new AWS.S3({
 ///// to upload to AWS S3 
 const upload = multer({
     storage: multerS3({
-      s3: s3,
-      bucket: BUCKET_NAME,
-      acl: 'public-read',
-      cacheControl: 'max-age=31536000',
-      contentType: multerS3.AUTO_CONTENT_TYPE,
-      metadata: function (req, file, cb) {
-        cb(null, {fieldName: file.fieldname});
-      },
-      key: function (req, file, cb) {
-        //const key = `user-profile-images/${process.env.NODE_ENV}_${Date.now().toString()}${path.extname(file.originalname)}`
-        var filetype = '';
-        if(file.mimetype === 'image/gif') {
-            filetype = 'gif';
+        s3: s3,
+        bucket: BUCKET_NAME,
+        acl: 'public-read',
+        cacheControl: 'max-age=31536000',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+        metadata: function (req, file, cb) {
+            cb(null, { fieldName: file.fieldname });
+        },
+        key: function (req, file, cb) {
+            //const key = `user-profile-images/${process.env.NODE_ENV}_${Date.now().toString()}${path.extname(file.originalname)}`
+            var filetype = '';
+            if (file.mimetype === 'image/gif') {
+                filetype = 'gif';
+            }
+            if (file.mimetype === 'image/png') {
+                filetype = 'png';
+            }
+            if (file.mimetype === 'image/jpeg') {
+                filetype = 'jpg';
+            }
+            const key = 'image-' + Date.now() + '.' + filetype;
+            cb(null, key);
         }
-        if(file.mimetype === 'image/png') {
-            filetype = 'png';
-        }
-        if(file.mimetype === 'image/jpeg') {
-            filetype = 'jpg';
-        }
-        const key = 'image-' + Date.now() + '.' + filetype;
-        cb(null, key);
-      }
     }),
-  });
+});
 
 
 
 ///api to create new product
-router.post('/', upload.single('file'), async(req, res) => {
+router.post('/', upload.single('file'), async (req, res) => {
     try {
         req.body.totalRating = 1;
         const { name, category, brand, numberInStock, price } = req.body  ////required fields
         if (name && category && brand && numberInStock && price) {
-            if(req.file){
+            if (req.file) {
                 //for mongo database      
                 req.body.imgUrl = req.file.location;
                 req.body.imgName = req.file.key;
@@ -78,11 +78,11 @@ router.post('/', upload.single('file'), async(req, res) => {
 
 ///MANIPULATE product with ID
 router.route('/:id')
-    .delete(async(req, res) => { ///delete product
+    .delete(async (req, res) => { ///delete product
         try {
             const { id } = req.params;
             const product = await Product.findByIdAndDelete(id)
-            
+
             const obj = {
                 success: true,
                 message: (product) ? "product deleted successfully" : "product not found"
@@ -92,16 +92,16 @@ router.route('/:id')
             res.json({ success: false, message: err.message })
         }
     })
-    .patch(upload.single('file'), async(req, res) => { ///edit product
-        try {                
+    .patch(upload.single('file'), async (req, res) => { ///edit product
+        try {
             const { id } = req.params;
-            if(req.file){
+            if (req.file) {
                 //for mongo database      
                 req.body.imgUrl = req.file.location;
                 req.body.imgName = req.file.key;
             }
             const product = await Product.findByIdAndUpdate(id, req.body, { returnOriginal: true })
-            
+
             const obj = {
                 success: true,
                 message: (product) ? "product edited successfully" : "product not found",
@@ -115,7 +115,7 @@ router.route('/:id')
 
 ///MANIPULATE product rating
 router.route('/:id')
-    .patch(async(req, res) => { ///delete rating
+    .patch(async (req, res) => { ///delete rating
         try {
             const { id } = req.params;
             const ratingValue = req.query
@@ -143,7 +143,7 @@ router.route('/:id')
 
 
 ///add comment
-router.post('/:id/comments', async(req, res) => {
+router.post('/:id/comments', async (req, res) => {
     try {
         const { id } = req.params; ///product id
         const { body } = req.body
@@ -169,7 +169,7 @@ router.post('/:id/comments', async(req, res) => {
 })
 
 ///delete comment
-router.delete('/:productId/comments/:commentId', async(req, res) => {
+router.delete('/:productId/comments/:commentId', async (req, res) => {
     try {
         const { productId, commentId } = req.params;
         const product = await Product.findByIdAndDelete(productId, { $pull: { comments: { $elemMatch: { _id: commentId } } } }, { returnOriginal: false })
@@ -185,9 +185,9 @@ router.delete('/:productId/comments/:commentId', async(req, res) => {
 })
 
 
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
     try {
-       // const userById = await User.findById(req.signedData.id);
+        // const userById = await User.findById(req.signedData.id);
         //  const userById = await User.findById(req.signedData.id);
         const { name, category, brand, maxPrice, minPrice, id, latestdate, oldestdate } = req.query;
         if (name) {
@@ -218,31 +218,31 @@ router.get('/', async(req, res) => {
         }
         res.send(obj)
     } catch (err) {
-        res.json({ statusCode: 422 ,success: false, message: err.message });
+        res.json({ statusCode: 422, success: false, message: err.message });
     }
 })
 
-router.get('/:id', async(req, res) => {
+router.get('/:id', async (req, res) => {
     try {
-        products = await Product.find({ _id:req.params.id });
+        products = await Product.find({ _id: req.params.id });
         const obj = {
             statusCode: 201,
             success: true,
             products: products
         }
         res.send(obj)
-     
+
     } catch (err) {
-        res.json({ statusCode: 422 ,success: false, message: err.message });
+        res.json({ statusCode: 422, success: false, message: err.message });
 
     }
 })
 
 
 
-router.get('/getCategory', async(req, res) => {
+router.get('/getCategory', async (req, res) => {
     try {
-       // const { category } = req.query;
+        // const { category } = req.query;
         products = await Product.find({});
         const CategoryArr = []
         for (let c in products) {
@@ -257,14 +257,14 @@ router.get('/getCategory', async(req, res) => {
         }
         res.send(obj)
     } catch (err) {
-        res.json({ statusCode: 422 ,success: false, message: err.message });
+        res.json({ statusCode: 422, success: false, message: err.message });
 
     }
 })
 
-router.get('/getBrand', async(req, res) => {
+router.get('/getBrand', async (req, res) => {
     try {
-     //   const { brand } = req.query;
+        //   const { brand } = req.query;
         products = await Product.find({});
         const brandArr = []
         for (let c in products) {
@@ -279,7 +279,7 @@ router.get('/getBrand', async(req, res) => {
         }
         res.send(obj)
     } catch (err) {
-        res.json({ statusCode: 422 ,success: false, message: err.message });
+        res.json({ statusCode: 422, success: false, message: err.message });
 
     }
 })
